@@ -20,6 +20,7 @@ public class DebrisSpawner : MonoBehaviour
     public WeightedItemCollectionSO debrisCollection;
     public WeightedItemCollectionSO smallDebrisCollection;
     public GameObject SpawnVolume;
+    public VoidSeeder voidSeeder;   // USAR extension: seeds confined-space voids into the pile
     public int numToSpawn;
     public float spawnDelay;
     public int numPiles;
@@ -65,6 +66,10 @@ public class DebrisSpawner : MonoBehaviour
             Destroy(SpawnVolume.GetComponent<BoxCollider>());
             SpawnVolume.GetComponent<MeshRenderer>().enabled = false;
         }
+
+        // USAR extension: ensure a VoidSeeder is available (auto-wire if not assigned in the inspector).
+        if (voidSeeder == null) voidSeeder = GetComponent<VoidSeeder>();
+        if (voidSeeder == null) voidSeeder = gameObject.AddComponent<VoidSeeder>();
     }
     private void OnEnable()
     {
@@ -89,6 +94,9 @@ public class DebrisSpawner : MonoBehaviour
             objList.Clear();
         }
 
+        // USAR extension: clear voids left from a previous pile before regenerating.
+        if (voidSeeder != null) voidSeeder.ClearSeeds();
+
         StartCoroutine(SetUpScene());
 
 
@@ -96,6 +104,8 @@ public class DebrisSpawner : MonoBehaviour
     IEnumerator SetUpScene()
     {
         Time.timeScale = 10f;
+        // USAR extension: place void obstacles before any debris so the pile settles around them.
+        if (voidSeeder != null) voidSeeder.SpawnVoidSeeds(spawnBounds, exportSTL);
         GeneratePile(smallDebrisCollection);
         yield return new WaitForSeconds(spawnDelay);
         for (int i = 0; i < numPiles; i++)
@@ -253,7 +263,10 @@ public class DebrisSpawner : MonoBehaviour
         }
         
         StaticBatchingUtility.Combine(objList.ToArray(), root);
-        
+
+        // USAR extension: pile is now frozen/static — remove the void obstacles, leaving
+        // stable cavities, and record their locations as ground truth.
+        if (voidSeeder != null) voidSeeder.RevealVoids();
     }
 
     public List<GameObject> GetDebrisObj()

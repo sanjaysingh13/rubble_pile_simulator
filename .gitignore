@@ -84,3 +84,16 @@ sysinfo.txt
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# --- Large / generated artifacts (belt-and-suspenders; keep multi-GB files out) ---
+# Unity Library cache is already the big one (2+ GB) — ensure it's ignored everywhere.
+/[Ll]ibrary/
+# Standalone player builds
+/[Bb]uild/
+/[Bb]uilds/
+*.x86_64
+# Web PoC (three.js + Rapier) — deps and bundles
+web/node_modules/
+web/dist/
+# Crash dumps
+mono_crash.mem.*.blob
